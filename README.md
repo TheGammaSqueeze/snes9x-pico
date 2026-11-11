@@ -85,8 +85,11 @@ LK's calling convention, and no VFP or NEON registers the LK would have to save)
 and C++ without exceptions or RTTI, link time optimisation. Optimisation is chosen per file: the
 code every frame runs through (CPU, DMA, PPU, memory map, SPC700 and DSP) at `-O2`, the rest at
 `-Os` so the image stays small (it had to fit a 2 MB slot when the LK kept it on the eMMC), and `-O2` again for the link time pass. These are exactly the
-flags, sources and link order the LK used when the core was built inside its tree, and the blob
-is the one that build produced.
+flags, sources and link order the LK used when the core was built inside its tree. The blob is
+the one that build produced, byte for byte, followed by 12 zero bytes: the 16 byte padding the
+header's load size always counted, which `objcopy` left out of the file until `pico/blob.ld` put
+it inside the last loaded section (the LK's card loader rejects a file shorter than its load
+size). The header, the code and the data are unchanged.
 
 `EXTRA_PATCHES=/path/a.patch ./build.sh` applies more patches after `patches/` for experiments.
 

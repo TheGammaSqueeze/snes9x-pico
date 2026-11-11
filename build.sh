@@ -16,9 +16,9 @@
 # its slot, so optimisation is chosen per file: the code that runs every frame (65816 CPU, DMA,
 # PPU and renderer entry, memory map, SPC700 and DSP) at -O2, everything else at -Os, all with
 # link time optimisation (-O2 at the link). These are the flags, sources and link order the LK
-# used when the core was built in its tree (emu/snes9x/build_core.sh + build_core_blob.sh), and
-# the blob is byte for byte the one that tree produced; keep it that way unless a change is meant
-# to alter the core.
+# used when the core was built in its tree (emu/snes9x/build_core.sh + build_core_blob.sh): the
+# blob is byte for byte the one that tree produced plus the 12 bytes of padding that file lacked
+# (see pico/blob.ld). Keep it that way unless a change is meant to alter the core.
 set -euo pipefail
 export LC_ALL=C
 cd "$(dirname "$0")"
@@ -115,9 +115,7 @@ import struct, sys, hashlib
 d = open(sys.argv[1], 'rb').read()
 magic, ver, entry, load, span = struct.unpack_from('<5I', d)
 assert magic == 0x31534E53 and ver == 2, "bad header"
-# objcopy does not write the 16 byte alignment padding after the last loaded section, so the
-# file can end up to 15 bytes short of the header's load size
-assert len(d) <= load < len(d) + 16, "load size %d, file %d" % (load, len(d))
+assert load == len(d), "load size %d != file %d" % (load, len(d))
 assert 20 <= entry < load, "entry outside the image"
 print("snes9x-pico.blob: %s" % sys.argv[2])
 print("  file %d bytes, span %d bytes (%.2f MiB with BSS), entry +0x%x" % (len(d), span, span / 1048576.0, entry))

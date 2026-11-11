@@ -53,10 +53,13 @@ SECTIONS
 	.init_array : {
 		KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
 		KEEP(*(.init_array .ctors))
+		__init_array_end = .;
+		/* the padding to 16 bytes is inside the last loaded section so the flat image carries
+		 * it: outside a section objcopy dropped it, and the file came out up to 15 bytes
+		 * shorter than the load size in the header, which the LK's card loader rejects */
+		. = ALIGN(16);
 	}
-	__init_array_end = .;
 
-	. = ALIGN(16);
 	__blob_load_end = .;
 
 	.bss (NOLOAD) : {
@@ -70,3 +73,4 @@ SECTIONS
 
 	/DISCARD/ : { *(.comment) *(.ARM.attributes) *(.note.*) *(.fini_array*) *(.eh_frame*) *(.ARM.exidx*) *(.ARM.extab*) }
 }
+ASSERT(__blob_end <= 0x4F800000, "snes9x-pico: the blob runs past its slot (0x4F000000 to 0x4F800000)")
