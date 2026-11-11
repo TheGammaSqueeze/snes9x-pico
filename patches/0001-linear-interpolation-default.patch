@@ -1,0 +1,19 @@
+snes9x-pico patch to upstream snes9x (libretro/libretro.cpp), under the Snes9x licence like the
+file it changes. Copyright (c) 2026 TheGammaSqueeze. Applied by build.sh to a copy in out/src.
+
+When the frontend sets no snes9x_audio_interpolation value, the DSP uses Linear interpolation
+instead of Gaussian. Linear is cheaper on the Cortex-A76 the LK runs the core on (measured at
+1400 MHz: 121 fps with Gaussian, 128 fps with Linear). The LK's Audio Filter setting still picks
+any of the five methods; only the default changes.
+
+--- a/libretro/libretro.cpp
++++ b/libretro/libretro.cpp
+@@ -524,7 +524,7 @@
+             Settings.InterpolationMethod = DSP_INTERPOLATION_NONE;
+     }
+     else
+-        Settings.InterpolationMethod = DSP_INTERPOLATION_GAUSSIAN;
++        Settings.InterpolationMethod = DSP_INTERPOLATION_LINEAR;   /* LK default: Linear (faster than Gaussian) */
+ 
+ 
+     Settings.OneClockCycle      = 6;
